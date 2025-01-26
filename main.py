@@ -1,10 +1,15 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 import PyPDF2
 import google.generativeai as genai
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
-GEMINI_API_KEY = 'AIzaSyAvFuzunIKLW7t2nVTX51DsswnzW3UyE0w'
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
