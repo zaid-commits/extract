@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Chat with PDF</title>
+  </head>
+  <body>
+    <h1>Chat with PDF</h1>
+    <div id="pdf-text">{{ text }}</div>
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Type your question...">
+      <input type="submit" value="Send">
+    </form>
+    <div id="chat-output"></div>
+    <script>
+      document.getElementById('chat-form').onsubmit = function(e) {
+        e.preventDefault();
+        var userInput = document.getElementById('user-input').value;
+        var chatOutput = document.getElementById('chat-output');
+        chatOutput.innerHTML += '<p><strong>You:</strong> ' + userInput + '</p>';
+        
+        fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_input: userInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+          chatOutput.innerHTML += '<p><strong>Bot:</strong> ' + data.response + '</p>';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          chatOutput.innerHTML += '<p><strong>Bot:</strong> Error occurred</p>';
+        });
+
+        document.getElementById('user-input').value = '';
+      };
+    </script>
+  </body>
+</html>
