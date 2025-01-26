@@ -2,23 +2,43 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with PDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <h1>Chat with PDF</h1>
-    <div id="pdf-text">{{ text }}</div>
-    <form id="chat-form">
-      <input type="text" id="user-input" placeholder="Type your question...">
-      <input type="submit" value="Send">
-    </form>
-    <div id="chat-output"></div>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-xl w-full max-w-2xl p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">Chat with PDF</h1>
+
+      <div id="pdf-text" class="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm text-gray-700 mb-6 h-32 overflow-y-auto">{{ text }}</div>
+
+      <form id="chat-form" class="flex items-center gap-2 mb-4">
+        <input 
+          type="text" 
+          id="user-input" 
+          class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none" 
+          placeholder="Type your question..."
+        >
+        <button 
+          type="submit" 
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300"
+        >
+          Send
+        </button>
+      </form>
+
+      <div id="chat-output" class="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm text-gray-700 h-48 overflow-y-auto"></div>
+    </div>
+
     <script>
       document.getElementById('chat-form').onsubmit = function(e) {
         e.preventDefault();
-        var userInput = document.getElementById('user-input').value;
-        var chatOutput = document.getElementById('chat-output');
-        chatOutput.innerHTML += '<p><strong>You:</strong> ' + userInput + '</p>';
-        
+        const userInput = document.getElementById('user-input').value.trim();
+        if (!userInput) return;
+
+        const chatOutput = document.getElementById('chat-output');
+        chatOutput.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+
         fetch('/chat', {
           method: 'POST',
           headers: {
@@ -28,11 +48,12 @@
         })
         .then(response => response.json())
         .then(data => {
-          chatOutput.innerHTML += '<p><strong>Bot:</strong> ' + data.response + '</p>';
+          chatOutput.innerHTML += `<p><strong>ImpicAI</strong> ${data.response}</p>`;
+          chatOutput.scrollTop = chatOutput.scrollHeight;
         })
         .catch(error => {
           console.error('Error:', error);
-          chatOutput.innerHTML += '<p><strong>Bot:</strong> Error occurred</p>';
+          chatOutput.innerHTML += '<p><strong>ImpicAI</strong> Error occurred</p>';
         });
 
         document.getElementById('user-input').value = '';
