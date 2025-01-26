@@ -1,63 +1,296 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImpicAI - Chat With Pdf</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white shadow-lg rounded-xl w-full max-w-2xl p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4">ImpicChat</h1>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>ImpicAI - Chat With PDF</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      <div id="pdf-text" class="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm text-gray-700 mb-6 h-32 overflow-y-auto">{{ text }}</div>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #000000;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
 
-      <form id="chat-form" class="flex items-center gap-2 mb-4">
-        <input 
-          type="text" 
-          id="user-input" 
-          class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 focus:outline-none" 
-          placeholder="Type your question..."
-        >
-        <button 
-          type="submit" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300"
-        >
-          Send
-        </button>
-      </form>
+    .container {
+      background-color: #111111;
+      border: 1px solid #333333;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 900px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
 
-      <div id="chat-output" class="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm text-gray-700 h-48 overflow-y-auto"></div>
+    header {
+      background-color: #000000;
+      color: #ffffff;
+      padding: 24px;
+      text-align: center;
+      border-bottom: 1px solid #333333;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      background-color: #111111;
+      scrollbar-width: thin;
+      scrollbar-color: #333333 #111111;
+    }
+
+    .chat-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-track {
+      background: #111111;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+      background-color: #333333;
+      border-radius: 3px;
+    }
+
+    .message {
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      max-width: 80%;
+      font-size: 15px;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+      background-color: #1a1a1a;
+      margin-left: auto;
+      color: #ffffff;
+      border: 1px solid #333333;
+    }
+
+    .ai-message {
+      background-color: #000000;
+      color: #ffffff;
+      border: 1px solid #333333;
+    }
+
+    .ai-message strong, .user-message strong {
+      font-size: 14px;
+      color: #888888;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .typing-indicator {
+      color: #666666;
+      font-style: italic;
+      padding: 16px;
+      background-color: #000000;
+      border-radius: 12px;
+      border: 1px solid #333333;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 24px;
+      gap: 12px;
+      background-color: #000000;
+      border-top: 1px solid #333333;
+    }
+
+    #user-input {
+      flex-grow: 1;
+      padding: 16px;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      font-size: 15px;
+      background-color: #111111;
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    #user-input:focus {
+      outline: none;
+      border-color: #444444;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    }
+
+    #user-input::placeholder {
+      color: #666666;
+    }
+
+    #send-button {
+      background-color: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #send-button:hover {
+      background-color: #e0e0e0;
+      transform: translateY(-1px);
+    }
+
+    #send-button:active {
+      transform: translateY(1px);
+    }
+
+    .error-message {
+      color: #ff4444;
+      background-color: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.2);
+    }
+
+    footer {
+      background-color: #000000;
+      color: #ffffff;
+      padding: 16px;
+      text-align: center;
+      border-top: 1px solid #333333;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .text-blue-800 {
+      color: #1e40af; /* Adjust the color as needed */
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0;
+      }
+
+      .container {
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+
+      #send-button {
+        padding: 16px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ImpicAI - Chat With PDF</h1>
+    </header>
+    <div id="chat-output" class="chat-area" aria-live="polite">
+      <p class="typing-indicator">Start asking questions about the uploaded PDF...</p>
     </div>
+    <form id="chat-form" class="input-area" aria-label="Chat input form">
+      <input 
+        type="text" 
+        id="user-input" 
+        placeholder="Type your question here..." 
+        required 
+        aria-label="User input"
+        autocomplete="off"
+      >
+      <button type="submit" id="send-button">Send</button>
+    </form>
+  </div>
+  <footer>
+    Made with ❤️ by <a class="text-blue-800" href="https://zedfr.me" target="_blank">Zaid</a> at <a class="text-blue-800" href="https://community.impic.tech" target="_blank">Impic</a>
+  </footer>
 
-    <script>
-      document.getElementById('chat-form').onsubmit = function(e) {
-        e.preventDefault();
-        const userInput = document.getElementById('user-input').value.trim();
-        if (!userInput) return;
+  <script>
+    document.getElementById("chat-form").onsubmit = function (e) {
+      e.preventDefault();
+      const userInput = document.getElementById("user-input").value.trim();
+      const chatOutput = document.getElementById("chat-output");
 
-        const chatOutput = document.getElementById('chat-output');
-        chatOutput.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+      if (!userInput) return;
 
-        fetch('/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ user_input: userInput })
-        })
-        .then(response => response.json())
-        .then(data => {
-          chatOutput.innerHTML += `<p><strong>ImpicAI</strong> ${data.response}</p>`;
+      // Add User Message
+      const userMessageDiv = document.createElement('div');
+      userMessageDiv.className = 'message user-message';
+      userMessageDiv.innerHTML = `<strong>You</strong> ${userInput}`;
+      chatOutput.appendChild(userMessageDiv);
+
+      // Add AI Typing Indicator
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'message ai-message typing-indicator';
+      loadingIndicator.innerHTML = `<strong>ImpicAI</strong> Typing...`;
+      chatOutput.appendChild(loadingIndicator);
+      chatOutput.scrollTop = chatOutput.scrollHeight;
+
+      // Fetch AI Response
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_input: userInput }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Remove Typing Indicator and Add AI Response
+          chatOutput.removeChild(loadingIndicator);
+          const aiMessageDiv = document.createElement('div');
+          aiMessageDiv.className = 'message ai-message';
+          aiMessageDiv.innerHTML = `<strong>ImpicAI</strong> ${data.response}`;
+          chatOutput.appendChild(aiMessageDiv);
           chatOutput.scrollTop = chatOutput.scrollHeight;
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error:', error);
-          chatOutput.innerHTML += '<p><strong>ImpicAI</strong> Error occurred</p>';
+          chatOutput.removeChild(loadingIndicator);
+          const errorMessageDiv = document.createElement('div');
+          errorMessageDiv.className = 'message ai-message error-message';
+          errorMessageDiv.innerHTML = `<strong>ImpicAI</strong> An error occurred. Please try again.`;
+          chatOutput.appendChild(errorMessageDiv);
+          chatOutput.scrollTop = chatOutput.scrollHeight;
         });
 
-        document.getElementById('user-input').value = '';
-      };
-    </script>
-  </body>
+      // Clear Input Field
+      document.getElementById("user-input").value = '';
+    };
+  </script>
+</body>
 </html>

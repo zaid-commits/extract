@@ -27,9 +27,10 @@ def extract_text_from_pdf(pdf_path):
         return text
 
 def get_gemini_response(prompt):
-    full_prompt = f"{extracted_text}\n\n{prompt}"
+    context = "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is https://community.impic.tech, also don't greet at every message. just at the first message."
+    full_prompt = f"{context}\n\nExtracted Text:\n{extracted_text}\n\nUser Prompt:\n{prompt}"
     response = model.generate_content(full_prompt)
-    print("Gemini API response:", response)  # Add this line to log the response
+    print("Gemini API response:", response)  # Log the response
     return response.text
 
 @app.route('/', methods=['GET', 'POST'])
@@ -41,17 +42,19 @@ def upload_file():
         if file.filename == '':
             return redirect(request.url)
         if file:
-            file.save(file.filename)
-            text = extract_text_from_pdf(file.filename)
+            file_path = os.path.join('uploads', file.filename)
+            os.makedirs('uploads', exist_ok=True)
+            file.save(file_path)
+            text = extract_text_from_pdf(file_path)
             return render_template('chat.html', text=text)
     return render_template('upload.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('user_input')
-    print("User input:", user_input)  # Add this line to log the user input
+    print("User input:", user_input)  # Log the user input
     response_text = get_gemini_response(user_input)
-    print("Response text:", response_text)  # Add this line to log the response text
+    print("Response text:", response_text)  # Log the response text
     return jsonify({'response': response_text})
 
 if __name__ == "__main__":
