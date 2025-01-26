@@ -11,7 +11,6 @@ app = Flask(__name__)
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
 
 extracted_text = ""
 
@@ -28,9 +27,9 @@ def extract_text_from_pdf(pdf_path):
 
 def get_gemini_response(prompt):
     full_prompt = f"{extracted_text}\n\n{prompt}"
-    response = model.generate_content(full_prompt)
+    response = genai.generate(prompt=full_prompt)
     print("Gemini API response:", response)  # Add this line to log the response
-    return response.text
+    return response['choices'][0]['text']
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
