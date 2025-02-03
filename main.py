@@ -3,6 +3,7 @@ import PyPDF2
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
+import re
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,6 +15,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 extracted_text = ""
+conversation_history = []
 
 def extract_text_from_pdf(pdf_path):
     global extracted_text
@@ -27,14 +29,22 @@ def extract_text_from_pdf(pdf_path):
         return text
 
 def get_gemini_response(prompt):
-    context = "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is https://community.impic.tech, also don't greet at every message. just at the first message."
-    full_prompt = f"{context}\n\nExtracted Text:\n{extracted_text}\n\nUser Prompt:\n{prompt}"
+    global conversation_history
+    context = "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is https://community.impic.tech, "
+    conversation_history.append(f"User: {prompt}")
+    full_prompt = f"{context}\n\nExtracted Text:\n{extracted_text}\n\nConversation History:\n" + "\n".join(conversation_history)
     response = model.generate_content(full_prompt)
     print("Gemini API response:", response)  # Log the response
-    return response.text
+    ai_response = response.text
+    ai_response = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', ai_response)  # Make bold words
+    ai_response = re.sub(r'<b>(.*?)</b>\*', r'<b>\1</b>\n', ai_response)  # New line and remove asterisk
+    conversation_history.append(f"ImpicAI: {ai_response}")
+    return ai_response
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
+    global conversation_history
+    conversation_history = []  # Reset conversation history when a new file is uploaded
     if request.method == 'POST':
         if 'file' not in request.files:
             return redirect(request.url)
