@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, jsonify
+from flask_cors import CORS
 import PyPDF2
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ import re
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
@@ -41,6 +43,16 @@ def get_gemini_response(prompt):
     conversation_history.append(f"ImpicAI: {ai_response}")
     return ai_response
 
+def summarize_text(text):
+    prompt = f"Summarize the following text:\n\n{text}"
+    response = model.generate_content(prompt)
+    return response.text
+
+def improve_language(text):
+    prompt = f"Improve the language of the following text and explain the changes you made:\n\n{text}"
+    response = model.generate_content(prompt)
+    return response.text
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     global conversation_history
@@ -66,6 +78,18 @@ def chat():
     response_text = get_gemini_response(user_input)
     print("Response text:", response_text)  # Log the response text
     return jsonify({'response': response_text})
+
+@app.route('/summarizer', methods=['POST'])
+def summarizer():
+    text = request.json.get('text')
+    summary = summarize_text(text)
+    return jsonify({'summary': summary})
+
+@app.route('/lang_improve', methods=['POST'])
+def lang_improve_route():
+    text = request.json.get('text')
+    improved_text = improve_language(text)
+    return jsonify({'improved_text': improved_text})
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
