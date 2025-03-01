@@ -30,9 +30,17 @@ def extract_text_from_pdf(pdf_path):
 
 def get_gemini_response(prompt):
     global conversation_history
-    context = "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is https://community.impic.tech, "
+    # Updated context instructing the AI to include citations referencing page numbers.
+    context = (
+        "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange "
+        "at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is "
+        "https://community.impic.tech. When referencing information from the PDF, include a citation indicating the page number "
+        "in the format [Page X](#page=X), so that the UI can link to that area."
+    )
     conversation_history.append(f"User: {prompt}")
-    full_prompt = f"{context}\n\nExtracted Text:\n{extracted_text}\n\nConversation History:\n" + "\n".join(conversation_history)
+    full_prompt = (
+        f"{context}\n\nExtracted Text:\n{extracted_text}\n\nConversation History:\n" + "\n".join(conversation_history)
+    )
     response = model.generate_content(full_prompt)
     print("Gemini API response:", response)  # Log the response
     ai_response = response.text
