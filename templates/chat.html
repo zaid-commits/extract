@@ -30,16 +30,33 @@
     }
 
     .container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      height: 90vh;
       background-color: #111111;
       border: 1px solid #333333;
       border-radius: 16px;
-      width: 100%;
-      max-width: 900px;
-      height: 90vh;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .pdf-preview {
+      flex: 1;
+      border-right: 1px solid #333333;
+      overflow: hidden;
+    }
+
+    .pdf-preview iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
@@ -208,8 +225,19 @@
       }
 
       .container {
+        flex-direction: column;
         height: 100vh;
         border-radius: 0;
+      }
+
+      .pdf-preview {
+        height: 50%;
+        border-right: none;
+        border-bottom: 1px solid #333333;
+      }
+
+      .chat-container {
+        height: 50%;
       }
 
       .message {
@@ -224,23 +252,28 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>ImpicAI - Chat With PDF</h1>
-    </header>
-    <div id="chat-output" class="chat-area" aria-live="polite">
-      <p class="typing-indicator">Start asking questions about the uploaded PDF...</p>
+    <div class="pdf-preview">
+      <iframe src="{{ url_for('uploaded_file', filename=pdf_path) }}" frameborder="0"></iframe>
     </div>
-    <form id="chat-form" class="input-area" aria-label="Chat input form">
-      <input 
-        type="text" 
-        id="user-input" 
-        placeholder="Type your question here..." 
-        required 
-        aria-label="User input"
-        autocomplete="off"
-      >
-      <button type="submit" id="send-button">Send</button>
-    </form>
+    <div class="chat-container">
+      <header>
+        <h1>ImpicAI - Chat With PDF</h<|meta_end|>1>
+      </header>
+      <div id="chat-output" class="chat-area" aria-live="polite">
+        <p class="typing-indicator">Start asking questions about the uploaded PDF...</p>
+      </div>
+      <form id="chat-form" class="input-area" aria-label="Chat input form">
+        <input 
+          type="text" 
+          id="user-input" 
+          placeholder="Type your question here..." 
+          required 
+          aria-label="User input"
+          autocomplete="off"
+        >
+        <button type="submit" id="send-button">Send</button>
+      </form>
+    </div>
   </div>
   <footer>
     Made with ❤️ by <a class="text-blue-800" href="https://zedfr.me" target="_blank">Zaid</a> at <a class="text-blue-800" href="https://community.impic.tech" target="_blank">Impic</a>
