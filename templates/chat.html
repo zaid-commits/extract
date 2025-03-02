@@ -50,6 +50,25 @@
       max-width: 100%;
       margin: 0 auto;
     }
+    .pdf-controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #000;
+      color: #fff;
+      border-top: 1px solid #333;
+    }
+    .pdf-controls button {
+      background-color: #fff;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .pdf-controls button:hover { background-color: #e0e0e0; }
+    .pdf-controls button:disabled { background-color: #666; cursor: not-allowed; }
     .chat-container {
       flex: 1;
       display: flex;
@@ -170,6 +189,11 @@
     <div class="pdf-preview">
       <!-- PDF.js will render the PDF into this canvas -->
       <canvas id="pdf-canvas"></canvas>
+      <div class="pdf-controls">
+        <button id="prev-page" disabled>Previous</button>
+        <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
+        <button id="next-page" disabled>Next</button>
+      </div>
     </div>
     <div class="chat-container">
       <header>
@@ -209,6 +233,7 @@
     const url = "{{ url_for('uploaded_file', filename=pdf_path) }}";
     pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
       pdfDoc = pdfDoc_;
+      document.getElementById('page-count').textContent = pdfDoc.numPages;
       // Initial render of the first page.
       renderPage(currentPage);
     });
@@ -233,6 +258,11 @@
           }
         });
       });
+
+      // Update page counters
+      document.getElementById('page-num').textContent = num;
+      document.getElementById('prev-page').disabled = (num <= 1);
+      document.getElementById('next-page').disabled = (num >= pdfDoc.numPages);
     }
 
     // If another page navigations request comes in, queue it.
@@ -243,6 +273,19 @@
         renderPage(num);
       }
     }
+
+    // Event listeners for PDF controls
+    document.getElementById('prev-page').addEventListener('click', function() {
+      if (currentPage <= 1) return;
+      currentPage--;
+      queueRenderPage(currentPage);
+    });
+
+    document.getElementById('next-page').addEventListener('click', function() {
+      if (currentPage >= pdfDoc.numPages) return;
+      currentPage++;
+      queueRenderPage(currentPage);
+    });
 
     // Chat functionality
     document.getElementById("chat-form").onsubmit = function (e) {
