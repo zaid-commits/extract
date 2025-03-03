@@ -265,7 +265,7 @@
       document.getElementById('next-page').disabled = (num >= pdfDoc.numPages);
     }
 
-    // If another page navigations request comes in, queue it.
+    // If request navigation
     function queueRenderPage(num) {
       if (pageRendering) {
         pageNumPending = num;
@@ -274,7 +274,7 @@
       }
     }
 
-    // Event listeners for PDF controls
+    // pdf controls
     document.getElementById('prev-page').addEventListener('click', function() {
       if (currentPage <= 1) return;
       currentPage--;
@@ -287,27 +287,27 @@
       queueRenderPage(currentPage);
     });
 
-    // Chat functionality
+    // chatbox
     document.getElementById("chat-form").onsubmit = function (e) {
       e.preventDefault();
       const userInput = document.getElementById("user-input").value.trim();
       const chatOutput = document.getElementById("chat-output");
       if (!userInput) return;
 
-      // Add User Message
+      // user message
       const userMessageDiv = document.createElement('div');
       userMessageDiv.className = 'message user-message';
       userMessageDiv.innerHTML = `<strong>You</strong> ${userInput}`;
       chatOutput.appendChild(userMessageDiv);
 
-      // Add AI Typing Indicator
+      // typing indicator
       const loadingIndicator = document.createElement('div');
       loadingIndicator.className = 'message ai-message typing-indicator';
       loadingIndicator.innerHTML = `<strong>ImpicAI</strong> Typing...`;
       chatOutput.appendChild(loadingIndicator);
       chatOutput.scrollTop = chatOutput.scrollHeight;
 
-      // Fetch AI Response
+      // api response
       fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -315,10 +315,9 @@
       })
       .then((response) => response.json())
       .then((data) => {
-        // Remove Typing Indicator
         chatOutput.removeChild(loadingIndicator);
-        // Convert citation markdown to clickable links.
-        // For example, "[Page 3](#page=3)" becomes <a href="#page=3">Page 3</a>
+
+        //citation clickable links
         const formattedResponse = data.response.replace(/\[Page ([^\]]+)\]\(#page=(\d+)\)/g, '<a href="#page=$2">Page $1</a>');
         const aiMessageDiv = document.createElement('div');
         aiMessageDiv.className = 'message ai-message';
@@ -336,11 +335,11 @@
         chatOutput.scrollTop = chatOutput.scrollHeight;
       });
 
-      // Clear Input Field
+      // Clear Input 
       document.getElementById("user-input").value = '';
     };
 
-    // Listen to clicks on citation links in the chat area
+    // Listen click links
     document.getElementById("chat-output").addEventListener("click", function(e) {
       const target = e.target;
       if (target.tagName === "A" && target.getAttribute("href").startsWith("#page=")) {

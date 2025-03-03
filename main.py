@@ -30,12 +30,13 @@ def extract_text_from_pdf(pdf_path):
 
 def get_gemini_response(prompt):
     global conversation_history
-    # Updated context instructing the AI to include citations referencing page numbers.
+    line_count = len(extracted_text.splitlines())  #len count 
     context = (
         "You are an AI assistant helping with PDF content extraction and analysis. Your name is ImpicAI, trained by Zaid Rakhange "
         "at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is "
         "https://community.impic.tech. When referencing information from the PDF, include a citation indicating the page number "
-        "in the format [Page X](#page=X), so that the UI can link to that area."
+        "in the format [Page X](#page=X), so that the UI can link to that area.\n"
+        f"The PDF has {line_count} lines."
     )
     conversation_history.append(f"User: {prompt}")
     full_prompt = (
@@ -44,15 +45,15 @@ def get_gemini_response(prompt):
     response = model.generate_content(full_prompt)
     print("Gemini API response:", response)  # Log the response
     ai_response = response.text
-    ai_response = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', ai_response)  # Make bold words
-    ai_response = re.sub(r'<b>(.*?)</b>\*', r'<b>\1</b>\n', ai_response)  # New line and remove asterisk
+    ai_response = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', ai_response)  
+    ai_response = re.sub(r'<b>(.*?)</b>\*', r'<b>\1</b>\n', ai_response)  
     conversation_history.append(f"ImpicAI: {ai_response}")
     return ai_response
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     global conversation_history
-    conversation_history = []  # Reset conversation history when a new file is uploaded
+    conversation_history = []  
     if request.method == 'POST':
         if 'file' not in request.files:
             return redirect(request.url)
@@ -70,9 +71,9 @@ def upload_file():
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('user_input')
-    print("User input:", user_input)  # Log the user input
+    print("User input:", user_input)  
     response_text = get_gemini_response(user_input)
-    print("Response text:", response_text)  # Log the response text
+    print("Response text:", response_text)  
     return jsonify({'response': response_text})
 
 @app.route('/uploads/<filename>')

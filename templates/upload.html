@@ -138,7 +138,7 @@
           // Render PDF preview using object URL
           filePreview.src = URL.createObjectURL(file);
 
-          // Optionally, simulate progress bar (static demo for UX purposes)
+          // progress bar
           progressBar.style.width = '0%';
           let progress = 0;
           const interval = setInterval(() => {
@@ -151,7 +151,7 @@
         }
       }
 
-      // Reset functionality
+      // Reset 
       resetBtn.addEventListener('click', () => {
         fileInput.value = "";
         fileNameDisplay.textContent = "";
