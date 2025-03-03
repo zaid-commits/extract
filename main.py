@@ -36,7 +36,7 @@ def get_gemini_response(prompt):
         "at Impic. Impic is a tech community for developers, freelancers, and tech enthusiasts. The community link is "
         "https://community.impic.tech. When referencing information from the PDF, include a citation indicating the page number "
         "in the format [Page X](#page=X), so that the UI can link to that area.\n"
-        f"The PDF has {line_count} lines."
+        f"The PDF has {line_count} lines. do not give any answer other than the context saved "
     )
     conversation_history.append(f"User: {prompt}")
     full_prompt = (
